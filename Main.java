@@ -67,32 +67,62 @@ public class Main {
                     addMeal(connection, preparedStatement);
                 }
                 case "show" -> {
-                    System.out.println();
-                    for (int j = 1; j <= mealId; j++) {
-
-                        String selectAllMealsCategories2 = String.format("SELECT * FROM meals WHERE meal_id = %d;", j);
-                        preparedStatement = connection.prepareStatement(selectAllMealsCategories2);
-                        ResultSet all = preparedStatement.executeQuery();
-                        all.next();
-                        System.out.println("Category: " + all.getString("category"));
-                        System.out.println("Name: " + all.getString("meal"));
-                        System.out.println("Ingredients:");
-
-                        String selectAllIngredients2 = String.format("SELECT * FROM ingredients WHERE meal_id = %d", j);
-                        preparedStatement = connection.prepareStatement(selectAllIngredients2);
-                        ResultSet allIngredients2 = preparedStatement.executeQuery();
-                        while (allIngredients2.next()) {
-                            System.out.println(allIngredients2.getString("ingredient"));
+                    String category = null;
+                    boolean flag = true;
+                    while (flag) {
+                        System.out.println("Which category do you want to print (breakfast, lunch, dinner)?");
+                        category = scanner.nextLine();
+                        if (!category.matches("breakfast|lunch|dinner")) {
+                            System.out.println("Wrong meal category! Choose from: breakfast, lunch, dinner.");
+                            continue;
                         }
-                        System.out.println();
+                        flag = false;
                     }
+
+                    String countCategoryRows = String.format("SELECT COUNT(*) FROM meals WHERE category = '%s'", category);
+                    preparedStatement = connection.prepareStatement(countCategoryRows);
+                    ResultSet numberOfSpecificCategoryRows = preparedStatement.executeQuery();
+                    numberOfSpecificCategoryRows.next();
+                    int counter = numberOfSpecificCategoryRows.getInt("count");
+                    if (counter == 0) {
+                        System.out.println("No meals found.");
+                        continue;
                     }
+                    String selectFromMealTable = String.format("SELECT * FROM meals WHERE category = '%s'", category);
+                    preparedStatement = connection.prepareStatement(selectFromMealTable);
+                    ResultSet categoryMeal = preparedStatement.executeQuery();
+
+                    for (int c = 1; c <= counter; c++) {
+                        if(!categoryMeal.next()) {
+                            System.out.println("No meals found.");
+                        } else {
+                            if (c == 1) {
+                                System.out.println("Category: " + categoryMeal.getString("category"));
+                                System.out.println();
+                            }
+                            System.out.println("Name: " + categoryMeal.getString("meal"));
+                            int meal_id = categoryMeal.getInt("meal_id");
+
+                            String selectFromIngredients = String.format("SELECT ingredient FROM ingredients " +
+                                    "WHERE meal_id = %d", meal_id);
+                            preparedStatement = connection.prepareStatement(selectFromIngredients);
+                            ResultSet ingredeints = preparedStatement.executeQuery();
+                            System.out.println("Ingredients:");
+                            while (ingredeints.next()) {
+                                System.out.println(ingredeints.getString("ingredient"));
+                            }
+                            System.out.println();
+                            //categoryMeal.next();
+                        }
+                    }
+
                 }
             }
+        }
         scanner.close();
         preparedStatement.close();
         connection.close();
-        }
+    }
 
     private static void addMeal(Connection connection, PreparedStatement preparedStatement) throws SQLException {
 
