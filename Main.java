@@ -51,11 +51,11 @@ public class Main {
             System.out.println("What would you like to do (add, show, exit)?");
             String actionType = scanner.nextLine();
 
-//            if (actionType.equals("show") && mealId == 0/*mealNameList.size() == 0*/) {
-//                System.out.println("No meals saved. Add a meal first.");
-//            } else if (!actionType.matches("add|show|exit")) {
-//                continue;
-//            }
+            if (actionType.equals("show") && mealId == 0/*mealNameList.size() == 0*/) {
+                System.out.println("No meals saved. Add a meal first.");
+            } else if (!actionType.matches("add|show|exit")) {
+                continue;
+            }
 
             switch (actionType) {
                 case "exit" -> {
